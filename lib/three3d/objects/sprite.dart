@@ -32,21 +32,44 @@ class Sprite extends Object3D {
     if (_geometry == null) {
       _geometry = BufferGeometry();
 
-      var float32List =
-          Float32Array.from([-0.5, -0.5, 0, 0, 0, 0.5, -0.5, 0, 1, 0, 0.5, 0.5, 0, 1, 1, -0.5, 0.5, 0, 0, 1]);
+      var float32List = Float32Array.from([
+        -0.5,
+        -0.5,
+        0,
+        0,
+        0,
+        0.5,
+        -0.5,
+        0,
+        1,
+        0,
+        0.5,
+        0.5,
+        0,
+        1,
+        1,
+        -0.5,
+        0.5,
+        0,
+        0,
+        1
+      ]);
 
       var interleavedBuffer = InterleavedBuffer(float32List, 5);
 
       _geometry!.setIndex([0, 1, 2, 0, 2, 3]);
-      _geometry!.setAttribute('position', InterleavedBufferAttribute(interleavedBuffer, 3, 0, false));
-      _geometry!.setAttribute('uv', InterleavedBufferAttribute(interleavedBuffer, 2, 3, false));
+      _geometry!.setAttribute('position',
+          InterleavedBufferAttribute(interleavedBuffer, 3, 0, false));
+      _geometry!.setAttribute(
+          'uv', InterleavedBufferAttribute(interleavedBuffer, 2, 3, false));
     }
 
     geometry = _geometry;
     this.material = (material != null) ? material : SpriteMaterial(null);
   }
 
-  Sprite.fromJSON(Map<String, dynamic> json, Map<String, dynamic> rootJSON) : super.fromJSON(json, rootJSON) {
+  Sprite.fromJSON(Map<String, dynamic> json, Map<String, dynamic> rootJSON)
+      : super.fromJSON(json, rootJSON) {
     type = 'Sprite';
   }
 
@@ -55,11 +78,13 @@ class Sprite extends Object3D {
     _worldScale.setFromMatrixScale(matrixWorld);
 
     _viewWorldMatrix.copy(raycaster.camera?.matrixWorld ?? Matrix4());
-    modelViewMatrix.multiplyMatrices(raycaster.camera?.matrixWorldInverse ?? Matrix4(), matrixWorld);
+    modelViewMatrix.multiplyMatrices(
+        raycaster.camera?.matrixWorldInverse ?? Matrix4(), matrixWorld);
 
     _mvPosition.setFromMatrixPosition(modelViewMatrix);
 
-    if (raycaster.camera?.type == "PerspectiveCamera" && material.sizeAttenuation == false) {
+    if (raycaster.camera?.type == "PerspectiveCamera" &&
+        material.sizeAttenuation == false) {
       _worldScale.multiplyScalar(-_mvPosition.z);
     }
 
@@ -73,23 +98,53 @@ class Sprite extends Object3D {
 
     var center = this.center;
 
-    transformVertex(_spritevA.set(-0.5, -0.5, 0), _mvPosition, center, _worldScale, sin, cos);
-    transformVertex(_spritevB.set(0.5, -0.5, 0), _mvPosition, center, _worldScale, sin, cos);
-    transformVertex(_spritevC.set(0.5, 0.5, 0), _mvPosition, center, _worldScale, sin, cos);
+    transformVertex(
+      _spritevA.set(-0.5, -0.5, 0),
+      _mvPosition,
+      center,
+      Vector2(_worldScale.x, _worldScale.y),
+      sin,
+      cos,
+    );
+    transformVertex(
+      _spritevB.set(0.5, -0.5, 0),
+      _mvPosition,
+      center,
+      Vector2(_worldScale.x, _worldScale.y),
+      sin,
+      cos,
+    );
+    transformVertex(
+      _spritevC.set(0.5, 0.5, 0),
+      _mvPosition,
+      center,
+      Vector2(_worldScale.x, _worldScale.y),
+      sin,
+      cos,
+    );
 
     _spriteuvA.set(0, 0);
     _spriteuvB.set(1, 0);
     _spriteuvC.set(1, 1);
 
     // check first triangle
-    var intersect = raycaster.ray.intersectTriangle(_spritevA, _spritevB, _spritevC, false, _intersectPoint);
+    var intersect = raycaster.ray.intersectTriangle(
+        _spritevA, _spritevB, _spritevC, false, _intersectPoint);
 
     if (intersect == null) {
       // check second triangle
-      transformVertex(_spritevB.set(-0.5, 0.5, 0), _mvPosition, center, _worldScale, sin, cos);
+      transformVertex(
+        _spritevB.set(-0.5, 0.5, 0),
+        _mvPosition,
+        center,
+        Vector2(_worldScale.x, _worldScale.y),
+        sin,
+        cos,
+      );
       _spriteuvB.set(0, 1);
 
-      intersect = raycaster.ray.intersectTriangle(_spritevA, _spritevC, _spritevB, false, _intersectPoint);
+      intersect = raycaster.ray.intersectTriangle(
+          _spritevA, _spritevC, _spritevB, false, _intersectPoint);
       if (intersect == null) {
         return;
       }
@@ -102,8 +157,8 @@ class Sprite extends Object3D {
     intersects.add(Intersection({
       "distance": distance,
       "point": _intersectPoint.clone(),
-      "uv": Triangle.staticGetUV(
-          _intersectPoint, _spritevA, _spritevB, _spritevC, _spriteuvA, _spriteuvB, _spriteuvC, Vector2(null, null)),
+      "uv": Triangle.staticGetUV(_intersectPoint, _spritevA, _spritevB,
+          _spritevC, _spriteuvA, _spriteuvB, _spriteuvC, Vector2(null, null)),
       "face": null,
       "object": this
     }));
@@ -121,14 +176,30 @@ class Sprite extends Object3D {
   }
 }
 
-void transformVertex(vertexPosition, Vector3 mvPosition, Vector2 center, scale, double? sin, double? cos) {
+void transformVertex(
+  vertexPosition,
+  Vector3 mvPosition,
+  Vector2 center,
+  Vector2 scale,
+  double? sin,
+  double? cos,
+) {
   // compute position in camera space
-  _alignedPosition.subVectors(vertexPosition, center).addScalar(0.5).multiply(scale);
+  _alignedPosition
+      .subVectors(
+        // vertexPosition,
+        Vector2(vertexPosition.x, vertexPosition.y),
+        center,
+      )
+      .addScalar(0.5)
+      .multiply(scale);
 
   // to check if rotation is not zero
   if (sin != null && cos != null) {
-    _rotatedPosition.x = (cos * _alignedPosition.x) - (sin * _alignedPosition.y);
-    _rotatedPosition.y = (sin * _alignedPosition.x) + (cos * _alignedPosition.y);
+    _rotatedPosition.x =
+        (cos * _alignedPosition.x) - (sin * _alignedPosition.y);
+    _rotatedPosition.y =
+        (sin * _alignedPosition.x) + (cos * _alignedPosition.y);
   } else {
     _rotatedPosition.copy(_alignedPosition);
   }
