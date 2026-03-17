@@ -158,47 +158,39 @@ class InterleavedBufferAttribute extends BufferAttribute {
     return this;
   }
 
-  // clone ( data ) {
+  @override
+  BufferAttribute<NativeArray<num>> clone([data]) {
+    if (data == null) {
+      // print( 'three.InterleavedBufferAttribute.clone(): Cloning an interlaved buffer attribute will deinterleave buffer data!.' );
 
-  // 	if ( data == null ) {
+      var array = [];
 
-  // 		print( 'three.InterleavedBufferAttribute.clone(): Cloning an interlaved buffer attribute will deinterleave buffer data!.' );
+      for (var i = 0; i < count; i++) {
+        var index = i * this.data!.stride + offset;
 
-  // 		var array = [];
+        for (var j = 0; j < itemSize; j++) {
+          array.add(this.data!.array[index + j]);
+        }
+      }
 
-  // 		for ( var i = 0; i < this.count; i ++ ) {
+      return InterleavedBufferAttribute(data, itemSize, offset, normalized);
+    } else {
+      if (data!.interleavedBuffers == null) {
+        data!.interleavedBuffers = {};
+      }
 
-  // 			var index = i * this.data!.stride + this.offset;
+      if (data!.interleavedBuffers[this.data!.uuid] == null) {
+        data!.interleavedBuffers[this.data!.uuid] = this.data!.clone(data);
+      }
 
-  // 			for ( var j = 0; j < this.itemSize; j ++ ) {
-
-  // 				array.add( this.data!.array[ index + j ] );
-
-  // 			}
-
-  // 		}
-
-  // 		return new BufferAttribute(array, this.itemSize, this.normalized );
-
-  // 	} else {
-
-  // 		if ( data!.interleavedBuffers == null ) {
-
-  // 			data!.interleavedBuffers = {};
-
-  // 		}
-
-  // 		if ( data!.interleavedBuffers[ this.data!.uuid ] == null ) {
-
-  // 			data!.interleavedBuffers[ this.data!.uuid ] = this.data!.clone( data );
-
-  // 		}
-
-  // 		return new InterleavedBufferAttribute( data!.interleavedBuffers[ this.data!.uuid ], this.itemSize, this.offset, this.normalized );
-
-  // 	}
-
-  // }
+      return InterleavedBufferAttribute(
+        data!.interleavedBuffers[this.data!.uuid],
+        itemSize,
+        offset,
+        normalized,
+      );
+    }
+  }
 
   @override
   Map<String, Object> toJSON([data]) {

@@ -98,7 +98,7 @@ class WebGLProgramExtra {
         toneMappingName = 'Linear';
     }
 
-    return 'vec3 $functionName}( vec3 color ) { return ${toneMappingName}ToneMapping( color ); }';
+    return 'vec3 $functionName( vec3 color ) { return ${toneMappingName}ToneMapping( color ); }';
   }
 
   generateExtensions(parameters) {
