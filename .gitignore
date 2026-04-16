@@ -77,3 +77,6 @@ build/
 .history
 .idea
 .dart_tool
+
+# FVM Version Cache
+.fvm/

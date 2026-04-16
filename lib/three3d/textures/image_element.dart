@@ -1,3 +1,5 @@
+import 'package:flutter_gl/flutter_gl.dart';
+
 class ImageElement {
   String? uuid;
   dynamic url;
@@ -19,6 +21,6 @@ class ImageElement {
   });
 
   dispose() {
-    data?.dispose();
+    if (data is NativeArray) data.dispose();
   }
 }
