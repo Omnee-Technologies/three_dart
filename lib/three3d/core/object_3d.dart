@@ -323,7 +323,18 @@ class Object3D with EventDispatcher {
 
     updateWorldMatrix(true, false);
 
-    _position.setFromMatrixPosition(matrixWorld);
+    // Matrix4.elements is a Float32Array, so reading the world position back
+    // out of matrixWorld rounds it to 32-bit precision. At large world
+    // coordinates (a Floorfy scan can sit ~270,000 units from the origin) that
+    // rounding step is coarser than the gap between a panorama camera and its
+    // orbit target, so the look direction collapses and the view stops turning
+    // with the camera. With no parent the local position is already the world
+    // position, so take it directly and keep full precision.
+    if (parent == null) {
+      _position.copy(this.position);
+    } else {
+      _position.setFromMatrixPosition(matrixWorld);
+    }
 
     // TODO
     if (this is Camera || this is Light) {
